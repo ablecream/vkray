@@ -6,7 +6,6 @@ A few updates:
 
 ![Ray traced spheres](ray_tracing.jpg)
 
-The ray tracing code is based on this [blogpost](http://blog.three-eyed-games.com/2018/05/03/gpu-ray-tracing-in-unity-part-1/).
 My first attempt at using Vulkan, the ray tracing algorithm is still very basic.
  - The ray tracing algorithm is executed for each pixel in a compute shader
  - The compute shader writes the color result in a texture
@@ -26,3 +25,16 @@ cmake ..
 make
 ./vulkan_ray_tracer
 ```
+
+## TODO List
+
+* [x] Basic ray tracing on a sphere and a plane
+* [x] Cubemap skybox
+* [x] Sphere shading
+* [x] Specular highlight and reflection
+* [ ] Ray tracing on any geometric mesh
+* [ ] User interface (potentially using ImGUI)
+* [ ] Performances benchmarks 
+* [ ] Denoising algorithm
+* [ ] Phong shading and glossy effect
+* [ ] Acceleration Structures
