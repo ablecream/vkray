@@ -20,9 +20,23 @@ This project serves as both a learning tool and a prototype engine for real-time
 
 ## 🚀 How to build
 To compile this project, you will need the following libraries
- - Vulkan
- - GLFW
- - [stb (for image loading)](https://github.com/nothings/stb)
+- Vulkan
+- GLFW
+- [stb (for image loading)](https://github.com/nothings/stb)
+
+### Getting `stb_image`
+
+The project looks for `stb_image.h` inside `third_party/stb`. Clone the stb
+repository (or add it as a submodule) so the header is available:
+
+```bash
+git clone https://github.com/nothings/stb.git third_party/stb
+# or
+git submodule add https://github.com/nothings/stb.git third_party/stb
+git submodule update --init --recursive
+```
+
+Make sure `third_party/stb/stb_image.h` exists before configuring the project.
 
 Run the following command to build the project
 ```
