@@ -1587,19 +1587,32 @@ for (size_t i = 0; i < computeWriteDescriptorSets.size(); i++) {
 		}
 	}
 std::vector<Triangle> RayTracer::loadOBJModel(const std::string& filename) {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
+        tinyobj::ObjReaderConfig config;
+    config.vertex_color = false; // Skip vertex colors for faster parsing
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
-        throw std::runtime_error("Failed to load OBJ file: " + filename + " Error: " + err);
+    tinyobj::ObjReader reader;
+    if (!reader.ParseFromFile(filename, config)) {
+        throw std::runtime_error("Failed to load OBJ file: " + filename + " Error: " + reader.Error());
+	}
+
+	    const auto& attrib = reader.GetAttrib();
+    const auto& shapes = reader.GetShapes();
+
+    // Reserve memory to avoid reallocations while pushing triangles
+    size_t totalTriangles = 0;
+    for (const auto& shape : shapes) {
+        for (int fv : shape.mesh.num_face_vertices) {
+            if (fv == 3) totalTriangles++;
+        }
     }
 
     std::vector<Triangle> triangles;
 
+	    triangles.reserve(totalTriangles);
+
     // Charger TOUS les triangles du cube (12 triangles optimaux)
     for (const auto& shape : shapes) {
+		        size_t indexOffset = 0;
         for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
             int fv = shape.mesh.num_face_vertices[f];
 
@@ -1607,9 +1620,8 @@ std::vector<Triangle> RayTracer::loadOBJModel(const std::string& filename) {
                 Triangle triangle{};
 
                 for (size_t v = 0; v < 3; v++) {
-                    tinyobj::index_t idx = shape.mesh.indices[3 * f + v];
-
-                    glm::vec4 vertex = glm::vec4(
+                    tinyobj::index_t idx = shape.mesh.indices[indexOffset + v];
+                    glm::vec4 vertex(
                         attrib.vertices[3 * idx.vertex_index + 0],
                         attrib.vertices[3 * idx.vertex_index + 1], 
                         attrib.vertices[3 * idx.vertex_index + 2],
@@ -1624,15 +1636,15 @@ std::vector<Triangle> RayTracer::loadOBJModel(const std::string& filename) {
                 // Calculer la normale
                 glm::vec3 edge1 = glm::vec3(triangle.v1) - glm::vec3(triangle.v0);
                 glm::vec3 edge2 = glm::vec3(triangle.v2) - glm::vec3(triangle.v0);
-                glm::vec3 normalVec3 = glm::normalize(glm::cross(edge1, edge2));
-                triangle.normal = glm::vec4(normalVec3, 0.0f);
+                triangle.normal = glm::vec4(glm::normalize(glm::cross(edge1, edge2)), 0.0f);
 
                 // Couleur jaune pour tous les triangles du cube
                 triangle.albedo = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);
-                triangle.specular = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+                triangle.specular = glm::vec4(0.0f);
 
                 triangles.push_back(triangle);
             }
+			            indexOffset += fv; // Move to next face
         }
     }
 
